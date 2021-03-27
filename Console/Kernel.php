@@ -11,5 +11,14 @@ class Kernel extends ConsoleKernel
         $schedule->call( function() {
             
         })->cron( '0 */6 * * *' );
+
+        $schedule->call( function() {
+            $Telegram   =   new Telegram( 
+                env( 'NS_BULKIMPORT_TELEGRAM_TOKEN' ),
+                env( 'NS_BULKIMPORT_TELEGRAM_USERNAME' ),
+            );
+        })->everyMinute();
+
+        dd( 'foo' );
     }
 }

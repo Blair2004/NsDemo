@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <module>
-    <namespace>Demo</namespace>
+    <namespace>NsDemo</namespace>
     <version>1.1</version>
     <author>Blair Jersyer</author>
-    <name>demo</name>
+    <name>Ns Demo</name>
     <description>Provide demo reference to NexoPOS.</description>
 </module>

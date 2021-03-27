@@ -1,0 +1,13 @@
+{
+    "name": "blair2004/nsdemo",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "blair2004",
+            "email": "carlosjohnsonluv2004@gmail.com"
+        }
+    ],
+    "require": {
+        "longman/telegram-bot": "^0.71.0"
+    }
+}
