@@ -3,22 +3,25 @@ namespace Modules\NsDemo\Console;
 
 use App\Console\Kernel as ConsoleKernel;
 use Illuminate\Console\Scheduling\Schedule;
+use Modules\NsDemo\Jobs\ResetInstallationJob;
+use Modules\NsDemo\Services\BotService;
 
 class Kernel extends ConsoleKernel
 {
     protected function schedule( Schedule $schedule )
     {
         $schedule->call( function() {
-            
-        })->cron( '0 */6 * * *' );
+            $botService     =   app()->make( BotService::class );
+            $botService->sendMessage([
+                'chat_id'   =>  env( 'NS_BULKIMPORT_TELEGRAM_GROUP' ),
+                'text'      =>  sprintf(
+                    __( 'I\'ll reset the demo for the installation %s shortly.' ),
+                    url('/')
+                )
+            ]);
 
-        $schedule->call( function() {
-            $Telegram   =   new Telegram( 
-                env( 'NS_BULKIMPORT_TELEGRAM_TOKEN' ),
-                env( 'NS_BULKIMPORT_TELEGRAM_USERNAME' ),
-            );
-        })->everyMinute();
+            ResetInstallationJob::dispatchSync();
 
-        dd( 'foo' );
+        })->cron( '0 1 * * *' );
     }
 }

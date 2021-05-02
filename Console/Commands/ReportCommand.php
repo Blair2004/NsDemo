@@ -3,10 +3,11 @@ namespace Modules\NsDemo\Console\Commands;
 
 use Illuminate\Console\Command;
 use Longman\TelegramBot\Telegram;
+use Longman\TelegramBot\Request;
 
 class ReportCommand extends Command
 {
-    protected $signature    =   'ns:nsdemo {action}';
+    protected $signature    =   'ns:demo {action}';
     protected $description  =   'Provide summary report on telegram regarding reset activities.';
 
     public function __construct()
@@ -16,9 +17,5 @@ class ReportCommand extends Command
 
     public function handle()
     {
-        $Telegram   =   new Telegram( 
-            env( 'NS_BULKIMPORT_TELEGRAM_TOKEN' ),
-            env( 'NS_BULKIMPORT_TELEGRAM_USERNAME' ),
-        );
     }
 }

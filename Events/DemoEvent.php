@@ -11,7 +11,8 @@ class DemoEvent
 {
     public function demoAlert( Output $response ) 
     {
-        $response->addOutput( View::make( 'Demo::login.notice' ) );
+        $response->addOutput( View::make( 'NsDemo::login.notice' ) );
+        
         return $response;
     }
 }
