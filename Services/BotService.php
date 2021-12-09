@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Artisan;
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\Telegram;
 use Illuminate\Support\Arr;
+use Modules\NsDemo\Jobs\ResetInstallationJob;
 
 class BotService
 {
@@ -105,13 +106,11 @@ class BotService
 
     private function resetCommand( $data ) {
         try {
-            Artisan::call( 'ns:reset' );
-            Artisan::call( 'db:seed --class=DefaultSeeder' );
-            Artisan::call( 'ns:bulkimport /storage/app/products.csv --email=contact@nexopos.com --config=/storage/app/import-config.json' );
+            ResetInstallationJob::dispatch()->delay( now() );
 
             Request::sendMessage([
                 'chat_id'   =>  $data[ 'message' ][ 'chat' ][ 'id' ],
-                'text'      =>  __( 'The installation has been successfully reset.' )
+                'text'      =>  __( 'This should happen shortly...' )
             ]);
 
         } catch( Exception $exception ) {

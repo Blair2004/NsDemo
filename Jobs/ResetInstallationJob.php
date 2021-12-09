@@ -27,7 +27,41 @@ class ResetInstallationJob implements ShouldQueue
         $botService     =   app()->make( BotService::class );
 
         try {
-            Artisan::call( 'ns:reset' );
+            Artisan::call( 'ns:reset --mode=hard' );
+            Artisan::call( 'ns:setup --admin_username=admin --admin_email=contact@nexopos.com --password=123456 --store_name="NexoPOS 4x"' );
+            Artisan::call( 'env:set NS_MODULES_MANAGEMENT_DISABLED --v=false' );
+            Artisan::call( 'modules:enable NsDemo' );
+            Artisan::call( 'modules:enable NsBulkImporter' );
+            Artisan::call( 'env:set NS_MODULES_MANAGEMENT_DISABLED --v=true' );
+            Artisan::call( 'storage:link' );
+            Artisan::call( 'ns:reset --mode=grocery' );
+            dump( 'Process : ' . exec( 'vendor/bin/phpunit tests/Feature/CreateOrderTest.php' ) );
+
+            ComputeDayReportJob::dispatchSync();
+            ComputeDashboardMonthReportJob::dispatchSync();
+        } catch( Exception $exception ) {
+            $botService->sendMessage([
+                'chat_id'   =>  env( 'NS_BULKIMPORT_TELEGRAM_GROUP' ),
+                'text'      =>  sprintf(
+                    __( 'Something went wrong 😓 for %s. Here is the error : %s.' ),
+                    url('/'),
+                    $exception->getMessage()
+                )
+            ]);
+        }
+    }
+
+    public function deprecatedhandle()
+    {
+        $botService     =   app()->make( BotService::class );
+
+        try {
+            Artisan::call( 'ns:reset --mode=hard' );
+            Artisan::call( 'ns:setup --admin_username=admin --admin_email=contact@nexopos.com --password=123456 --store_name="NexoPOS 4x"' );
+            Artisan::call( 'env:set NS_MODULES_MANAGEMENT_DISABLED --v=false' );
+            Artisan::call( 'modules:enable NsDemo' );
+            Artisan::call( 'modules:enable NsBulkImporter' );
+            Artisan::call( 'env:set NS_MODULES_MANAGEMENT_DISABLED --v=true' );
             Artisan::call( 'db:seed --class=DefaultSeeder' );
             dump( 'Process : ' . exec( 'vendor/bin/phpunit tests/Feature/ResetUserStatsTest.php' ) );
             dump( 'Process : ' . exec( 'vendor/bin/phpunit tests/Feature/CreateRegisterTest.php' ) );
@@ -40,25 +74,6 @@ class ResetInstallationJob implements ShouldQueue
 
             ComputeDayReportJob::dispatchSync();
             ComputeDashboardMonthReportJob::dispatchSync();
-    
-            $botService->sendMessage([
-                'chat_id'   =>  env( 'NS_BULKIMPORT_TELEGRAM_GROUP' ),
-                'text'      =>  sprintf(
-                    Arr::random([
-                        __( 'The demo was successfully reset for %s 👍.' ),
-                        __( 'Alright, i did reset the demo %s 👍' ),
-                        __( 'Every went as expected on %s 👍' ),
-                        __( 'Short message to let you know the demo as set for %s 👍' ),
-                        __( 'The demo has been correctly reset for %s 👍' ),
-                        __( 'The tasks is over and the demo was reset for %s 👍' ),
-                        __( 'Until next request, i have reset the demo for %s 👍' ),
-                        __( 'That was a pretty easy job for %s 👍. Demo is reset' ),
-                        __( 'Confirmation message : demo is reset for %s 👍' ),
-                        __( 'Hi, just to let you know the demo is reset for %s 👍' ),
-                    ]),
-                    url('/'),
-                )
-            ]);
         } catch( Exception $exception ) {
             $botService->sendMessage([
                 'chat_id'   =>  env( 'NS_BULKIMPORT_TELEGRAM_GROUP' ),
