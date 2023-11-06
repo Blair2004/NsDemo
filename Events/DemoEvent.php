@@ -9,10 +9,13 @@ use Illuminate\Support\Facades\View;
 **/
 class DemoEvent
 {
-    public function demoAlert( Output $response ) 
+    public function header( Output $response ) 
     {
-        $response->addOutput( View::make( 'NsDemo::login.notice' ) );
-        
-        return $response;
+        $response->addOutput( View::make( 'NsDemo::login.header' ) );
+    }
+
+    public function footer( Output $response ) 
+    {
+        $response->addOutput( View::make( 'NsDemo::login.footer' ) );
     }
 }

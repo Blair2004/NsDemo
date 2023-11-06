@@ -3,7 +3,6 @@ namespace Modules\NsDemo\Services;
 
 use App\Exceptions\NotAllowedException;
 use Exception;
-use Illuminate\Support\Facades\Artisan;
 use Longman\TelegramBot\Request;
 use Longman\TelegramBot\Telegram;
 use Illuminate\Support\Arr;
