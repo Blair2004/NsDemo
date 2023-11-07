@@ -3,19 +3,31 @@ namespace Modules\NsDemo\Events;
 
 use App\Classes\Output;
 use Illuminate\Support\Facades\View;
+use Modules\NsDemo\Settings\DemoSettings;
 
 /**
  * Register Events
 **/
 class DemoEvent
 {
-    public function header( Output $response ) 
+    public function dashboardMenus( $menus )
     {
-        $response->addOutput( View::make( 'NsDemo::login.header' ) );
+        if ( $menus[ 'settings' ] ) {
+            $menus[ 'settings' ][ 'childrens' ][ 'nsdemo']    =   [
+                'label'     =>  __( 'Demo Settings' ),
+                'href'      =>  ns()->route( 'ns-demo-settings' ),
+            ];
+        }
+
+        return $menus;
     }
 
-    public function footer( Output $response ) 
+    public function settingsPage( $settings, $identifier )
     {
-        $response->addOutput( View::make( 'NsDemo::login.footer' ) );
+        if ( $identifier == 'ns-demo-settings' ) {
+            return new DemoSettings;
+        }
+
+        return $settings;
     }
 }

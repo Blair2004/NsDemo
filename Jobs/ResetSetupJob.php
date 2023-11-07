@@ -16,29 +16,16 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Modules\NsDemo\Services\BotService;
+use Modules\NsDemo\Services\ForgeService;
 use Throwable;
 
 class ResetSetupJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function handle()
+    public function handle( ForgeService $forgeService )
     {
-        $botService     =   app()->make( BotService::class );
-
-        try {
-            Artisan::call( 'optimize:clear' );
-            Artisan::call( 'ns:demo reset' );
-        } catch( Exception $exception ) {
-            $botService->sendMessage([
-                'chat_id'   =>  env( 'NS_BULKIMPORT_TELEGRAM_GROUP' ),
-                'text'      =>  sprintf(
-                    __( 'Something went wrong 😓 for %s. Here is the error : %s.' ),
-                    url('/'),
-                    $exception->getMessage()
-                )
-            ]);
-        }
+        $forgeService->resetSelectedWebsites();
     }
 
     /**

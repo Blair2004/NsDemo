@@ -4,6 +4,7 @@ namespace Modules\NsDemo\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Modules\NsDemo\Services\BotService;
+use Modules\NsDemo\Settings\DemoSettings;
 
 class NsDemoController extends Controller
 {
@@ -31,5 +32,10 @@ class NsDemoController extends Controller
     public function unsetTelegramWebHook( Request $request )
     {
         return $this->botService->unsetWebhook();
+    }
+
+    public function settings()
+    {
+        return DemoSettings::renderForm();
     }
 }

@@ -15,7 +15,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Modules\NsDemo\Console\Commands\ReportCommand;
+use Modules\NsDemo\Services\BotService;
+use Modules\NsDemo\Services\ForgeService;
 use Modules\NsGastro\Services\RestaurantDemoService;
 use Modules\NsMultiStore\Models\Store;
 use Throwable;
@@ -23,53 +26,49 @@ use Throwable;
 class SecondStepJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    
-    public function handle( ModulesService $modules )
+
+    public function __construct( public $server, public $website )
     {
-        /**
-         * let's auth the administrator
-         * he should exist from this moment
-         */
-        $admin  =   Role::namespace( Role::ADMIN )->users->firstOrFail();
-        Auth::loginUsingId( $admin->id );
+        // ...
+    }
+    
+    public function handle()
+    {
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . ns()->option->get( 'nsdemo_forge_api' ),
+            'Accept' => 'application/json',
+        ])->post( 'https://forge.laravel.com/api/v1/servers/' . $this->server . '/sites/' . $this->website . '/commands', [
+            'command'   =>  'php artisan modules:enable NsPrintAdapter && php artisan modules:enable NsGastro'
+        ]);
 
-        if ( $modules->getIfEnabled( 'NsGastro' ) && ! $modules->getIfEnabled( 'NsMultiStore' ) ) {
-            $this->resetRestaurantDemo();
-        } else if ( $modules->getIfEnabled( 'NsMultiStore' ) && ! $modules->getIfEnabled( 'NsGastro' ) ) {   
-            /**
-             * @var User
-             */
-            $user   =   Role::namespace( 'admin' )->users()->first();
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . ns()->option->get( 'nsdemo_forge_api' ),
+            'Accept' => 'application/json',
+        ])->post( 'https://forge.laravel.com/api/v1/servers/' . $this->server . '/sites/' . $this->website . '/commands', [
+            'command'   =>  'php artisan modules:enable NsMultiStore'
+        ]);
 
-            Artisan::call( 'multistore:wipe --force' );
-            Artisan::call( 'multistore:create "Grocery Master" --user ' . $user->email . '--roles admin' );
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . ns()->option->get( 'nsdemo_forge_api' ),
+            'Accept' => 'application/json',
+        ])->post( 'https://forge.laravel.com/api/v1/servers/' . $this->server . '/sites/' . $this->website . '/commands', [
+            'command'   =>  'php artisan modules:enable NsDemoFrontEnd'
+        ]);
 
-            $lastStore  =   Store::orderBy( 'id', 'desc' )->first();
-            ns()->store->setStore( $lastStore );
-            $this->resetGroceryDemo();
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . ns()->option->get( 'nsdemo_forge_api' ),
+            'Accept' => 'application/json',
+        ])->post( 'https://forge.laravel.com/api/v1/servers/' . $this->server . '/sites/' . $this->website . '/commands', [
+            'command'   =>  collect([
+                'php artisan modules:symlink NsPrintAdapter',
+                'php artisan modules:symlink NsGastro',
+                'php artisan modules:migrate NsPrintAdapter',
+                'php artisan modules:migrate NsGastro',
+            ])->join( ' && ' )
+        ]);
 
-        } else if ( $modules->getIfEnabled( 'NsMultiStore' ) && $modules->getIfEnabled( 'NsGastro' ) ) {   
-            /**
-             * @var User
-             */
-            $user   =   Role::namespace( 'admin' )->users()->first();
-
-            Artisan::call( 'multistore:wipe --force' );
-            Artisan::call( 'multistore:create "Chef Master - Restaurant" --user ' . $user->email . '--roles admin --roles ' . Role::STORECASHIER );
-
-            $lastStore  =   Store::orderBy( 'id', 'desc' )->first();
-            ns()->store->setStore( $lastStore );
-            $this->resetGroceryDemo();
-
-        } else {
-            Artisan::call( 'ns:reset --mode=grocery' );
-        }
-
-        ComputeDayReportJob::dispatchSync();
-        ComputeDashboardMonthReportJob::dispatchSync();
-
-        Artisan::call( 'optimize:clear' );
-        Artisan::call( 'ns:demo notify --message="Demo successfully reinitialized for %s"' );
+        ThirdStepResetJob::dispatch( $this->server, $this->website )
+            ->delay( now()->addSeconds( 15 ) );
     }
 
     /**
@@ -88,42 +87,6 @@ class SecondStepJob implements ShouldQueue
                 url('/'),
                 $exception->getMessage()
             )
-        ]);
-    }
-
-    public function resetRestaurantDemo()
-    {
-        /**
-         * @var ResetService
-         */
-        $resetService = app()->make(ResetService::class);
-        $resetService->softReset();
-
-        /**
-         * @var RestaurantDemoService
-         */
-        $demoService = app()->make(RestaurantDemoService::class);
-        $demoService->run([
-            'create_sales'          =>  true,
-            'create_procurements'   =>  true,
-        ]);
-    }
-
-    public function resetGroceryDemo()
-    {
-        /**
-         * @var ResetService
-         */
-        $resetService = app()->make(ResetService::class);
-        $resetService->softReset();
-
-        /**
-         * @var RestaurantDemoService
-         */
-        $demoService = app()->make(DemoService::class);
-        $demoService->run([
-            'create_sales'          =>  true,
-            'create_procurements'   =>  true,
         ]);
     }
 }

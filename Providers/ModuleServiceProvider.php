@@ -18,7 +18,7 @@ class ModuleServiceProvider extends ServiceProvider
 
         $this->event   =   new DemoEvent;
         
-        Hook::addAction( 'ns.before-login-fields', [ $this->event, 'header' ]);
-        Hook::addAction( 'ns.after-login-fields', [ $this->event, 'footer' ]);        
+        Hook::addFilter( 'ns-dashboard-menus', [ $this->event, 'dashboardMenus' ]);
+        Hook::addFilter( 'ns.settings', [ $this->event, 'settingsPage' ], 10, 2 );
     }
 }
