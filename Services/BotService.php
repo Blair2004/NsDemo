@@ -16,8 +16,8 @@ class BotService
     public function __construct()
     {
         $this->telegram   =   new Telegram( 
-            env( 'NS_BULKIMPORT_TELEGRAM_TOKEN' ), 
-            env( 'NS_BULKIMPORT_TELEGRAM_USERNAME' )
+            env( 'NS_BULKIMPORT_TELEGRAM_TOKEN', '' ), 
+            env( 'NS_BULKIMPORT_TELEGRAM_USERNAME', '' )
         );
     }
 

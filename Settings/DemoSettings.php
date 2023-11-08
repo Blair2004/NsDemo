@@ -36,7 +36,7 @@ class DemoSettings extends SettingsPage
                             'name'          =>  'nsdemo_servers',
                             'label'         =>  __( 'Select Demo Instances' ),
                             'type'          =>  'multiselect',
-                            'options'       =>  Helper::toJsOptions( collect( $forgeService->getInstances()[ 'servers' ] ), [ 'id', 'name' ]),
+                            'options'       =>  Helper::toJsOptions( collect( $forgeService->getInstances() ), [ 'id', 'name' ]),
                             'value'         =>  ns()->option->get( 'nsdemo_servers' ),
                             'description'   =>  __( 'Those instances will be managed by the module. Be careful as the selected instances will be reset periodically.' )
                         ], [

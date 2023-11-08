@@ -9,6 +9,6 @@ class Kernel extends ConsoleKernel
 {
     protected function schedule( Schedule $schedule )
     {
-        $schedule->job( ResetSetupJob::class )->everyThreeMinutes();
+        $schedule->job( ResetSetupJob::class )->hourly();
     }
 }

@@ -34,41 +34,23 @@ class SecondStepJob implements ShouldQueue
     
     public function handle()
     {
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . ns()->option->get( 'nsdemo_forge_api' ),
-            'Accept' => 'application/json',
-        ])->post( 'https://forge.laravel.com/api/v1/servers/' . $this->server . '/sites/' . $this->website . '/commands', [
-            'command'   =>  'php artisan modules:enable NsPrintAdapter && php artisan modules:enable NsGastro'
-        ]);
-
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . ns()->option->get( 'nsdemo_forge_api' ),
-            'Accept' => 'application/json',
-        ])->post( 'https://forge.laravel.com/api/v1/servers/' . $this->server . '/sites/' . $this->website . '/commands', [
-            'command'   =>  'php artisan modules:enable NsMultiStore'
-        ]);
-
-        $response = Http::withHeaders([
-            'Authorization' => 'Bearer ' . ns()->option->get( 'nsdemo_forge_api' ),
-            'Accept' => 'application/json',
-        ])->post( 'https://forge.laravel.com/api/v1/servers/' . $this->server . '/sites/' . $this->website . '/commands', [
-            'command'   =>  'php artisan modules:enable NsDemoFrontEnd'
-        ]);
-
-        $response = Http::withHeaders([
+        Http::withHeaders([
             'Authorization' => 'Bearer ' . ns()->option->get( 'nsdemo_forge_api' ),
             'Accept' => 'application/json',
         ])->post( 'https://forge.laravel.com/api/v1/servers/' . $this->server . '/sites/' . $this->website . '/commands', [
             'command'   =>  collect([
+                'php artisan modules:enable NsPrintAdapter',
+                'php artisan modules:enable NsGastro',
+                'php artisan modules:enable NsMultiStore',
+                'php artisan modules:enable NsDemoFrontEnd',
                 'php artisan modules:symlink NsPrintAdapter',
                 'php artisan modules:symlink NsGastro',
                 'php artisan modules:migrate NsPrintAdapter',
                 'php artisan modules:migrate NsGastro',
             ])->join( ' && ' )
         ]);
-
-        ThirdStepResetJob::dispatch( $this->server, $this->website )
-            ->delay( now()->addSeconds( 15 ) );
+        
+        ThirdStepResetJob::dispatch( $this->server, $this->website )->delay( now()->addMinute() );
     }
 
     /**
