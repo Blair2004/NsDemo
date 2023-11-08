@@ -37,7 +37,8 @@ class ThirdStepResetJob implements ShouldQueue
             'Accept' => 'application/json',
         ])->post( 'https://forge.laravel.com/api/v1/servers/' . $this->server . '/sites/' . $this->website . '/commands', [
             'command'   =>  collect([
-                'php artisan ns:demo'
+                'php artisan ns:demo',
+                'php artisan env:set NS_LOCK_MODULES --v=true'
             ])->join( ' && ' )
         ]);
     }
