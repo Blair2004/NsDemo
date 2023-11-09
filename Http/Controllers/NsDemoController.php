@@ -3,20 +3,20 @@ namespace Modules\NsDemo\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Modules\NsDemo\Crud\DemoInstancesCrud;
+use Modules\NsDemo\Jobs\FirstStepResetJob;
+use Modules\NsDemo\Models\DemoInstance;
 use Modules\NsDemo\Services\BotService;
+use Modules\NsDemo\Services\ForgeService;
 use Modules\NsDemo\Settings\DemoSettings;
 
 class NsDemoController extends Controller
 {
-    /**
-     * @var BotService
-     */
-    private $botService;
-    
     public function __construct(
-        BotService $botService
+        protected BotService $botService,
+        protected ForgeService $forgeService
     ) {
-        $this->botService   =   $botService;
+        // ...
     }
 
     public function registerTelegramWebHook()
@@ -37,5 +37,30 @@ class NsDemoController extends Controller
     public function settings()
     {
         return DemoSettings::renderForm();
+    }
+
+    public function getInstances()
+    {
+        return DemoInstancesCrud::table();
+    }
+
+    public function editInstances( DemoInstance $instance )
+    {
+        return DemoInstancesCrud::form( $instance );
+    }
+
+    public function createInstances()
+    {
+        return DemoInstancesCrud::form();
+    }
+
+    public function triggerInstances( DemoInstance $instance )
+    {
+        $this->forgeService->triggerInstances( $instance );
+
+        return [
+            'status'    =>  'success',
+            'message'   =>  __( 'The demo was successfully triggered' )
+        ];
     }
 }

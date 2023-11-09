@@ -4,6 +4,8 @@ namespace Modules\NsDemo\Services;
 use Illuminate\Support\Facades\Http;
 use Modules\NsDemo\Jobs\FirstStepResetJob;
 use Exception;
+use Modules\NsDemo\Jobs\DeployDemoJob;
+use Modules\NsDemo\Models\DemoInstance;
 
 class ForgeService
 {
@@ -67,13 +69,19 @@ class ForgeService
 
     public function resetSelectedWebsites()
     {
-        $sites          =   ns()->option->get( 'nsdemo_instances_sites', [] );
+        $instances  =   DemoInstance::get();
 
-        foreach( $sites as $site ) {
+        $instances->each( fn( $instance ) => $this->triggerInstances( $instance ) );
+    }
+
+    public function triggerInstances( DemoInstance $instance )
+    {
+        $forgeInstances     =   json_decode( $instance->forge_id );
+        foreach( ( array ) $forgeInstances as $site ) {
             $server     =   explode( '-', $site )[ 0 ];
             $website    =   explode( '-', $site )[ 1 ];
 
-            FirstStepResetJob::dispatch( $server, $website );
+            DeployDemoJob::dispatch( $server, $website, $instance->commands );
         }
     }
 }

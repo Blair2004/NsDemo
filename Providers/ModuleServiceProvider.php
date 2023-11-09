@@ -20,5 +20,6 @@ class ModuleServiceProvider extends ServiceProvider
         
         Hook::addFilter( 'ns-dashboard-menus', [ $this->event, 'dashboardMenus' ]);
         Hook::addFilter( 'ns.settings', [ $this->event, 'settingsPage' ], 10, 2 );
+        Hook::addFilter( 'ns-crud-resource', [ $this->event, 'registerCrud' ]);
     }
 }
